@@ -1,0 +1,8 @@
+hash: 3ca61a5bfd40cf3a64ae4b37a9a5cdaced5b085777e9f0020b1d965c278afbdb
+updated: 2016-07-18T00:01:44.884354331+09:00
+imports:
+- name: github.com/gopistolet/gospf
+  version: a58dd1fcbf509d558a6809c54defbce6872c40c5
+  subpackages:
+  - dns
+testImports: []
