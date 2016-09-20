@@ -5,12 +5,61 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 	"github.com/gopistolet/gospf"
 	"github.com/gopistolet/gospf/dns"
 )
 
 func main() {
 	os.Exit(_main())
+}
+
+func get_spf(domain string) (*gospf.SPF, error) {
+	i := 0
+	var spf *gospf.SPF
+	var err error
+	for {
+		spf, err = gospf.New(domain, &dns.GoSPFDNS{})
+		if err == nil {
+			break
+		}
+		i++
+		if i > 2 {
+			break
+		}
+		time.Sleep(time.Duration(i) * time.Second);
+	}
+	return spf, err
+}
+
+func get_reverse(ip string) (string, error) {
+	i := 0
+	var result string
+	var err error
+	for {
+		out, derr := exec.Command("dig", "+short","-x",ip).Output()
+		if derr != nil {
+			// do not retry
+			err = derr
+			break
+		}
+		result = strings.TrimRight(string(out), "\n")
+		result = strings.TrimRight(result, ".")
+		if len(result) == 0 {
+			// make error and retry
+			err = fmt.Errorf("no result\n")
+		} else {
+			// success
+			break
+		}
+		i++
+		if i > 2 {
+			break
+		}
+		time.Sleep(time.Duration(i) * time.Second);
+	}
+	return result, err
+
 }
 
 func _main() (st int) {
@@ -24,7 +73,7 @@ func _main() (st int) {
 	}
 	ip := os.Args[1]
 	domain := os.Args[2]
-	spf, err := gospf.New(domain, &dns.GoSPFDNS{})
+	spf, err := get_spf(domain)
 	if err != nil {
 		fmt.Printf("NG: DNS lookup failed: %s\n", err)
 		return
@@ -38,19 +87,12 @@ func _main() (st int) {
 
 	if check != "Pass" {
 		fmt.Printf("NG: spf check failed: result=%s\n", check)
-		return
+		// return
 	}
 
-	out, err := exec.Command("dig", "+short","-x",ip).Output()
+	result, err := get_reverse(ip)
 	if err != nil {
-		fmt.Printf("NG: dig failed: %s\n", err)
-		return
-	}
-	result := strings.TrimRight(string(out), "\n")
-	result = strings.TrimRight(result, ".")
-
-	if len(result) == 0 {
-		fmt.Printf("NG: reverse lookup failed: no result\n")
+		fmt.Printf("NG: reverse lookup dig failed: %s\n", err)
 		return
 	}
 
