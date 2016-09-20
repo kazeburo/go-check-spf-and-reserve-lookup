@@ -1,4 +1,4 @@
-VERSION=0.0.4
+VERSION=0.0.2
 TARGETS_NOVENDOR=$(shell glide novendor)
 
 all: check-spf-and-reserve-lookup
@@ -26,3 +26,6 @@ dist:
 clean:
 	rm -rf check-spf-and-reserve-lookup check-spf-and-reserve-lookup-*.tar.gz
 
+tag:
+	git tag v${VERSION}
+	git push origin v${VERSION}
