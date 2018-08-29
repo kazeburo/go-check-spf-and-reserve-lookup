@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
 	"github.com/gopistolet/gospf"
 	"github.com/gopistolet/gospf/dns"
 )
@@ -27,7 +28,7 @@ func get_spf(domain string) (*gospf.SPF, error) {
 		if i > 2 {
 			break
 		}
-		time.Sleep(time.Duration(i) * time.Second);
+		time.Sleep(time.Duration(i) * time.Second)
 	}
 	return spf, err
 }
@@ -37,7 +38,7 @@ func get_reverse(ip string) (string, error) {
 	var result string
 	var err error
 	for {
-		out, derr := exec.Command("dig", "+short","-x",ip).Output()
+		out, derr := exec.Command("dig", "+short", "-x", ip).Output()
 		if derr != nil {
 			// do not retry
 			err = derr
@@ -56,7 +57,7 @@ func get_reverse(ip string) (string, error) {
 		if i > 2 {
 			break
 		}
-		time.Sleep(time.Duration(i) * time.Second);
+		time.Sleep(time.Duration(i) * time.Second)
 	}
 	return result, err
 
@@ -64,12 +65,12 @@ func get_reverse(ip string) (string, error) {
 
 func _main() (st int) {
 	st = 1
-	if len(os.Args) < 3 || (len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help"))  {
+	if len(os.Args) < 3 || (len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help")) {
 		fmt.Printf("check-spf-and-reserve-lookup $ip $domain\n")
 		if len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
 			st = 0
 		}
-		return;
+		return
 	}
 	ip := os.Args[1]
 	domain := os.Args[2]
@@ -83,11 +84,11 @@ func _main() (st int) {
 	if err != nil {
 		fmt.Printf("NG: Check SPF failed: %s\n", err)
 		return
-    }
+	}
 
 	if check != "Pass" {
 		fmt.Printf("NG: spf check failed: result=%s\n", check)
-		// return
+		return
 	}
 
 	result, err := get_reverse(ip)
@@ -105,6 +106,3 @@ func _main() (st int) {
 	st = 0
 	return
 }
-
-
-
