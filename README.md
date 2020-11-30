@@ -2,6 +2,8 @@
 
 Verify that the SPF records and reverse DNS records are correct.
 
+To use check-spf-and-reserve-lookup, `dig` command is required.
+
 ## Usage
 
 ```
@@ -27,3 +29,6 @@ SPF and Reverse Lookup OK: OK: spf:Pass, reserve-lookup:xx.example.com
 SPF and Reverse Lookup OK: OK: spf:Pass
 ```
 
+## Install
+
+Please download release page or `mkr plugin install kazeburo/go-check-spf-and-reserve-lookup`.
