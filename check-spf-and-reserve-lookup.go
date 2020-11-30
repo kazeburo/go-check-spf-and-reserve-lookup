@@ -4,15 +4,21 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/gopistolet/gospf"
 	"github.com/gopistolet/gospf/dns"
+	"github.com/jessevdk/go-flags"
+	"github.com/mackerelio/checkers"
 )
 
-func main() {
-	os.Exit(_main())
+// Version by Makefile
+var version string
+
+type options struct {
+	Version bool `short:"v" long:"version" description:"Show version"`
 }
 
 func getSpf(domain string) (*gospf.SPF, error) {
@@ -44,11 +50,12 @@ func getReverse(ip string) (string, error) {
 			err = derr
 			break
 		}
-		result = strings.TrimRight(string(out), "\n")
+		result = strings.ReplaceAll(string(out), "\n", "")
+		result = strings.ReplaceAll(result, "\r", "")
 		result = strings.TrimRight(result, ".")
 		if len(result) == 0 {
 			// make error and retry
-			err = fmt.Errorf("no result\n")
+			err = fmt.Errorf("no result")
 		} else {
 			// success
 			break
@@ -63,46 +70,57 @@ func getReverse(ip string) (string, error) {
 
 }
 
-func _main() (st int) {
-	st = 1
-	if len(os.Args) < 3 || (len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help")) {
-		fmt.Printf("check-spf-and-reserve-lookup $ip $domain\n")
-		if len(os.Args) >= 2 && (os.Args[1] == "-h" || os.Args[1] == "--help") {
-			st = 0
-		}
-		return
+func main() {
+	ckr := checkSpfAndReverse()
+	ckr.Name = "SPF and Reverse"
+	ckr.Exit()
+}
+
+func checkSpfAndReverse() *checkers.Checker {
+	opts := options{}
+	psr := flags.NewParser(&opts, flags.HelpFlag|flags.PassDoubleDash)
+	psr.Usage = "check-spf-and-reserve-lookup [OPTIONS] $ip $domain"
+	args, err := psr.Parse()
+	if opts.Version {
+		fmt.Fprintf(os.Stderr, "Version: %s\nCompiler: %s %s\n",
+			version,
+			runtime.Compiler,
+			runtime.Version())
+		os.Exit(0)
 	}
-	ip := os.Args[1]
-	domain := os.Args[2]
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
+	}
+
+	if len(args) < 2 {
+		psr.WriteHelp(os.Stderr)
+		os.Exit(1)
+	}
+	ip := args[0]
+	domain := args[1]
 	spf, err := getSpf(domain)
 	if err != nil {
-		fmt.Printf("NG: DNS lookup failed: %s\n", err)
-		return
+		return checkers.Critical(fmt.Sprintf("DNS lookup failed: %v", err))
 	}
 
 	check, err := spf.CheckIP(ip)
 	if err != nil {
-		fmt.Printf("NG: Check SPF failed: %s\n", err)
-		return
+		return checkers.Critical(fmt.Sprintf("Check SPF failed: %v", err))
 	}
 
 	if check != "Pass" {
-		fmt.Printf("NG: spf check failed: result=%s\n", check)
-		return
+		return checkers.Critical(fmt.Sprintf("spf check failed: result=%s", check))
 	}
 
 	result, err := getReverse(ip)
 	if err != nil {
-		fmt.Printf("NG: reverse lookup dig failed: %s\n", err)
-		return
+		return checkers.Critical(fmt.Sprintf("reverse lookup dig failed: %v", err))
 	}
 
 	if strings.HasSuffix(result, domain) == false {
-		fmt.Printf("NG: reverse lookup failed: no contains domain - %s\n", result)
-		return
+		return checkers.Critical(fmt.Sprintf("reverse lookup failed: no contains domain - %s", result))
 	}
 
-	fmt.Printf("OK: spf:%s, reserve-lookup:%s\n", check, result)
-	st = 0
-	return
+	return checkers.Ok(fmt.Sprintf("OK: spf:%s, reserve-lookup:%s", check, result))
 }

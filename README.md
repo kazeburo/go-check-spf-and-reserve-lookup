@@ -1,8 +1,17 @@
 # go-check-spf-and-reserve-lookup
 
-usage
+Verify that the SPF records and reverse DNS records are correct.
+
+## Usage
 
 ```
-$ check-spf-and-reserve-lookup $ip $domain
+Usage:
+  check-spf-and-reserve-lookup check-spf-and-reserve-lookup [OPTIONS] $ip $domain
+
+Application Options:
+  -v, --version  Show version
+
+Help Options:
+  -h, --help     Show this help message
 ```
 
