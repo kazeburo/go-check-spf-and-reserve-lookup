@@ -17,7 +17,10 @@ fmt:
 	go fmt ./...
 
 clean:
-	rm -rf check-spf-and-reserve-lookup check-spf-and-reserve-lookup-*.tar.gz
+	rm -rf check-spf-and-reserve-lookup
+
+check:
+	go test ./...
 
 tag:
 	git tag v${VERSION}
