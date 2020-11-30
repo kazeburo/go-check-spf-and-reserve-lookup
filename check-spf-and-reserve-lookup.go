@@ -18,6 +18,7 @@ import (
 var version string
 
 type options struct {
+	SpfOnly bool `long:"spf-only" description:"check spf only"`
 	Version bool `short:"v" long:"version" description:"Show version"`
 }
 
@@ -72,7 +73,7 @@ func getReverse(ip string) (string, error) {
 
 func main() {
 	ckr := checkSpfAndReverse()
-	ckr.Name = "SPF and Reverse"
+	ckr.Name = "SPF and Reverse Lookup"
 	ckr.Exit()
 }
 
@@ -111,6 +112,10 @@ func checkSpfAndReverse() *checkers.Checker {
 
 	if check != "Pass" {
 		return checkers.Critical(fmt.Sprintf("spf check failed: result=%s", check))
+	}
+
+	if opts.SpfOnly {
+		return checkers.Ok(fmt.Sprintf("OK: spf:%s", check))
 	}
 
 	result, err := getReverse(ip)

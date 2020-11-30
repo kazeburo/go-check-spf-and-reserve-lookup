@@ -19,6 +19,11 @@ Example
 
 ```
 ./check-spf-and-reserve-lookup x.x.x.x example.com
-SPF and Reverse OK: OK: spf:Pass, reserve-lookup:xx.example.com
+SPF and Reverse Lookup OK: OK: spf:Pass, reserve-lookup:xx.example.com
+```
+
+```
+./check-spf-and-reserve-lookup --spf-only x.x.x.x example.jp
+SPF and Reverse Lookup OK: OK: spf:Pass
 ```
 
