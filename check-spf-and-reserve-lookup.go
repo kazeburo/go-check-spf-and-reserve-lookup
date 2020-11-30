@@ -15,7 +15,7 @@ func main() {
 	os.Exit(_main())
 }
 
-func get_spf(domain string) (*gospf.SPF, error) {
+func getSpf(domain string) (*gospf.SPF, error) {
 	i := 0
 	var spf *gospf.SPF
 	var err error
@@ -33,7 +33,7 @@ func get_spf(domain string) (*gospf.SPF, error) {
 	return spf, err
 }
 
-func get_reverse(ip string) (string, error) {
+func getReverse(ip string) (string, error) {
 	i := 0
 	var result string
 	var err error
@@ -74,7 +74,7 @@ func _main() (st int) {
 	}
 	ip := os.Args[1]
 	domain := os.Args[2]
-	spf, err := get_spf(domain)
+	spf, err := getSpf(domain)
 	if err != nil {
 		fmt.Printf("NG: DNS lookup failed: %s\n", err)
 		return
@@ -91,7 +91,7 @@ func _main() (st int) {
 		return
 	}
 
-	result, err := get_reverse(ip)
+	result, err := getReverse(ip)
 	if err != nil {
 		fmt.Printf("NG: reverse lookup dig failed: %s\n", err)
 		return
